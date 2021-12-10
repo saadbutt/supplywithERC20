@@ -5,9 +5,11 @@ pragma solidity ^0.8.0;
 //import "@openzeppelin/contracts/utils/Strings.sol";
 import "./SafeMath.sol";
 import "./IERC20.sol";
-contract SaadToken {
+
+contract FloyxTokenomics {
 
     using SafeMath for uint256;
+    uint256 public constant unixtimeOneMonth = 60;//2592000; //60*60*24*30
     uint256 public teamCounter;
     uint256 public deployedTime;
     uint256 public paymentPerMonthTeam;
@@ -24,17 +26,16 @@ contract SaadToken {
         deployedTime = block.timestamp;
         floyx = IERC20(tokenAddress_);
         uint256 supply = floyx.totalSupply();
+
         tokenAllowance[teamAddress_] = percentage(supply,teamPercentage_); // 10 % to supply team
         paymentPerMonthTeam = percentage(tokenAllowance[teamAddress_],teamPercentage_);
         installmentsTeam = tokenAllowance[teamAddress_].div(paymentPerMonthTeam);
-        teamCounter = 0;
-
     }
 
     // Lockout 6 months, 10% every month
     function claimTeam() public payable{
         require(tokenAllowance[msg.sender] != 0, "You are not in Team allowance list");
-        require(tokenAllowance[msg.sender]>0,"PaymentsCompleted");
+        require(tokenAllowance[msg.sender] > 0, "Payments Completed");
 
         uint256 lockPeriod = 1;
         uint256 presentTime= block.timestamp; 
@@ -44,14 +45,14 @@ contract SaadToken {
         require(monthsToPay != teamCounter,"No due Payments yet");
 
         if (monthsToPay>0) {
-            uint256 amountdue=0;
+            uint256 amountDue=0;
             for(uint256 len=teamCounter; len<monthsToPay; len++){
-                amountdue = amountdue.add(paymentPerMonthTeam);
+                amountDue = amountDue.add(paymentPerMonthTeam);
                 teamCounter = teamCounter.add(1);
             }
-            tokenAllowance[msg.sender] = tokenAllowance[msg.sender].sub(amountdue);
-            floyx.transfer(msg.sender,amountdue);
-            emit FundsReleased(msg.sender, amountdue);
+            tokenAllowance[msg.sender] = tokenAllowance[msg.sender].sub(amountDue);
+            floyx.transfer(msg.sender,amountDue);
+            emit FundsReleased(msg.sender, amountDue);
         }
     }
   
@@ -60,30 +61,15 @@ contract SaadToken {
     }
 
     function elapsedMonths(uint256 _number,uint256 _lockPeriod) public view returns(uint256) {
-        uint256 unixtimeOneMonth = 60;//2592000; //60*60*24*30
         uint256 unixlocktime = _lockPeriod.mul(unixtimeOneMonth);
 
         require(_number>unixlocktime,"Lock period is active");
-
         _number = _number.sub(unixlocktime);
-        if (_number<=0) {
-            return 0;
-        }
-
+        if (_number<=0) {return 0;}
         uint256 res =_number.div(unixtimeOneMonth);
-        
-        if(res > installmentsTeam){
-            res = installmentsTeam;
-        }
+        if(res > installmentsTeam){ res = installmentsTeam; }
 
         return res;
-    }
-
-    // How much time spent after deployment time
-    function calculateMonths() public view returns(uint256) {
-        uint256 presentTime = block.timestamp; 
-        presentTime = presentTime.sub(deployedTime);
-        return presentTime;
     }
 }
 
