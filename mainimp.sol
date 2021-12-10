@@ -16,6 +16,7 @@ contract SaadToken {
     uint256 public deployedTime;
     mapping(address => uint) public allowanceteam;
     uint256 public paymentPerMonthTeam;
+    uint256 public installmentsTeam;
 
     event Transfer(
         address indexed _from,
@@ -38,6 +39,7 @@ contract SaadToken {
         // 10 % to supply team
         allowanceteam[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2] = percentage(supply,10);
         paymentPerMonthTeam = percentage(allowanceteam[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2],10);
+        installmentsTeam = allowanceteam[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2]/paymentPerMonthTeam;
         counterteam = 0;
     }
 
@@ -56,7 +58,7 @@ contract SaadToken {
     
     //  monthsToPay=monthsToPay.add()
     
-        require(monthsToPay != counterteam, No due Payments yet);
+        require(monthsToPay != counterteam,"No due Payments yet");
 
         if (monthsToPay>0) {
             uint256 len;
@@ -86,7 +88,13 @@ contract SaadToken {
             return 0;
         }
 
-        return _number.div(unixtimeOneMonth);
+        uint256 res =_number.div(unixtimeOneMonth);
+        
+        if(res > installmentsTeam){
+            res = installmentsTeam;
+        }
+
+        return res;
     }
 
     // How much time spent after deployment time
