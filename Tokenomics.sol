@@ -12,6 +12,7 @@ contract FloyxTokenomics is Ownable{
     using SafeMath for uint256;
 
     uint256 public constant unixtimeOneMonth = 60;//2592000; //60*60*24*30
+    bool public lockClaim = false;
     uint256 public deployedTime;
 
     IERC20 internal floyx;
@@ -40,6 +41,16 @@ contract FloyxTokenomics is Ownable{
             paymentPerMonth[addresses_[i]] = _percentage(tokenAllowance[addresses_[i]], installmentPercentage_[i]); // installments of supply
             remainingInstallments[addresses_[i]] =  tokenAllowance[addresses_[i]].div(paymentPerMonth[addresses_[i]]);
         }
+    }
+
+
+    function lockWithdraw() public onlyOwner {
+        lockClaim = true;
+    }
+
+
+    function unlockWithdraw() public onlyOwner {
+        lockClaim = false;
     }
 
     function distributeInstallment(address recepient, uint256 monthsToPay) public{
@@ -140,6 +151,7 @@ contract FloyxTokenomics is Ownable{
     }
 
     function _verifyClaim(string memory role_,address user_)internal view {
+        require(lockClaim == false,"Withdraw is locked now. Please try again later");
         require(roles[role_] == user_, "Invalid caller");
         require(tokenAllowance[user_] > 0, "Floyx Tokenomics : Payments already completed");
         require(remainingInstallments[user_] > 0, "Floyx Tokenomics : installments completed");
