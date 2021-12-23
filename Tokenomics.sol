@@ -65,7 +65,7 @@ contract FloyxTokenomics is Ownable{
         string memory role = "team";
         _verifyClaim(role, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "No due Payments yet");
+        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
         distributeInstallment(msg.sender,monthsToPay);
     }
 
@@ -74,7 +74,7 @@ contract FloyxTokenomics is Ownable{
         _verifyClaim(role, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
         monthsToPay = monthsToPay.div(3);
-        require (monthsToPay > 0, "No due Payments yet");
+        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -83,7 +83,7 @@ contract FloyxTokenomics is Ownable{
         string memory role = "marketing";
         _verifyClaim(role, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "No due Payments yet");
+        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -99,7 +99,7 @@ contract FloyxTokenomics is Ownable{
         string memory role = "development";
         _verifyClaim(role, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "No due Payments yet");
+        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -108,7 +108,7 @@ contract FloyxTokenomics is Ownable{
         string memory role = "ecosystemFunds";
         _verifyClaim(role, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "No due Payments yet");
+        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -122,34 +122,34 @@ contract FloyxTokenomics is Ownable{
     }
 
     function airDropClaim()public{
-        string memory role = "ecosystemFunds";
+        string memory role = "airdrop";
         _verifyClaim(role, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "No due Payments yet");
+        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
 
     function grantsClaim()public{
-        string memory role = "ecosystemFunds";
+        string memory role = "grants";
         _verifyClaim(role, msg.sender);
         uint256 monthsToPay = _elapsedMonths(3); // 3 months lockout period
-        require (monthsToPay > 0, "No due Payments yet");
+        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
 
     function _verifyClaim(string memory role_,address user_)internal view {
         require(roles[role_] == user_, "Invalid caller");
-        require(tokenAllowance[user_] > 0, "Payments already Completed");
-        require(remainingInstallments[user_] > 0, "installments completed");
+        require(tokenAllowance[user_] > 0, "Floyx Tokenomics : Payments already completed");
+        require(remainingInstallments[user_] > 0, "Floyx Tokenomics : installments completed");
     }
 
     function updateAddress(string[] memory roles_, address[] memory addresses_)public onlyOwner{
         require(addresses_.length == roles_.length);
         
         for(uint8 i = 0; i< roles_.length; i++){
-            require(roles[roles_[i]] != address(0), "role does not exists");
+            require(roles[roles_[i]] != address(0), "Floyx Tokenomics : role does not exists");
             roles[roles_[i]] = addresses_[i];
         }
     }
@@ -169,9 +169,9 @@ contract FloyxTokenomics is Ownable{
         uint256 elapsedTime = presentTime.sub(deployedTime);
      
         uint256 unixlocktime = _lockPeriod.mul(unixtimeOneMonth);
-        require(elapsedTime > unixlocktime,"Lock period is active");
+        require(elapsedTime > unixlocktime,"Floyx Tokenomics : Lock period is active");
         elapsedTime = elapsedTime.sub(unixlocktime);
-        require(elapsedTime > 0, "Lock period is active");      
+        require(elapsedTime > 0, "Floyx Tokenomics : Lock period is active");      
         uint256 elapsedMonth = elapsedTime.div(unixtimeOneMonth);
         return elapsedMonth;
     }
