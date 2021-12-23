@@ -19,15 +19,13 @@ contract FloyxTokenomics {
     mapping(address => uint) public remainingInstallments;
     mapping(address => uint) public completedInstallments;
 
-    address public addres;
-
     IERC20 internal floyx;
 
     event FundsReleased(address indexed recepient, uint256 amount);
                     // 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2,0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2,10,10,5,5,2
 
     constructor(string[] memory roles_, address[] memory addresses_, uint256[] memory allowancePercentage_, 
-        uint256[] memory installmentPercentage_, address floyxAddress)public payable {
+        uint256[] memory installmentPercentage_, address floyxAddress){
 
         require(addresses_.length == roles_.length);
         deployedTime = block.timestamp;
@@ -41,11 +39,9 @@ contract FloyxTokenomics {
             paymentPerMonth[addresses_[i]] = percentage(tokenAllowance[addresses_[i]], installmentPercentage_[i]); // installments of supply
             remainingInstallments[addresses_[i]] =  tokenAllowance[addresses_[i]].div(paymentPerMonth[addresses_[i]]);
         }
-
-        
     }
 
-    function distributeInstallment(address recepient, uint256 monthsToPay) public payable {
+    function distributeInstallment(address recepient, uint256 monthsToPay) public{
         uint256 amountDue=0;
         monthsToPay = monthsToPay.sub(completedInstallments[recepient]);
         for(uint256 len=monthsToPay; len>0; len--){
@@ -63,22 +59,18 @@ contract FloyxTokenomics {
         }
     }
 
-    function teamClaim()public payable{
+    function teamClaim()public{
         string memory role = "team";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
         uint256 monthsToPay = elapsedMonths(0);
         require (monthsToPay > 0, "No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
 
-    function teamAdvisor()public payable{
+    function advisorClaim()public{
         string memory role = "advisorsAndPartnership";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
         uint256 monthsToPay = elapsedMonths(0);
         monthsToPay = monthsToPay.div(3);
         require (monthsToPay > 0, "No due Payments yet");
@@ -86,42 +78,34 @@ contract FloyxTokenomics {
         distributeInstallment(msg.sender,monthsToPay);
     }
 
-    function teamMarketing()public payable{
+    function marketingClaim()public{
         string memory role = "marketing";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
         uint256 monthsToPay = elapsedMonths(0);
         require (monthsToPay > 0, "No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
 
-    function teamLiquidity()public payable{
+    function liquidityClaim()public{
         string memory role = "liquidity";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
 
         distributeInstallment(msg.sender,remainingInstallments[msg.sender]);
     }
 
-    function teamDevelopment()public payable{
+    function developmentClaim()public{
         string memory role = "development";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
         uint256 monthsToPay = elapsedMonths(0);
         require (monthsToPay > 0, "No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
 
-    function teamFunds()public payable{
+    function ecosystemClaim()public{
         string memory role = "ecosystemFunds";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
         uint256 monthsToPay = elapsedMonths(0);
         require (monthsToPay > 0, "No due Payments yet");
 
@@ -129,35 +113,35 @@ contract FloyxTokenomics {
     }
 
 
-    function teamTokenSale()public payable{
+    function tokenSaleClaim()public{
         string memory role = "tokenSale";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
 
         distributeInstallment(msg.sender,remainingInstallments[msg.sender]);
     }
 
-    function teamAirDrop()public payable{
+    function airDropClaim()public{
         string memory role = "ecosystemFunds";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
         uint256 monthsToPay = elapsedMonths(0);
         require (monthsToPay > 0, "No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
     }
 
-    function teamGrants()public payable{
+    function grantsClaim()public{
         string memory role = "ecosystemFunds";
-        require(roles[role] == msg.sender, "Invalid caller");
-        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
-        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        _verifyClaim(role, msg.sender);
         uint256 monthsToPay = elapsedMonths(3); // 3 months lockout period
         require (monthsToPay > 0, "No due Payments yet");
 
         distributeInstallment(msg.sender,monthsToPay);
+    }
+
+    function _verifyClaim(string memory role_,address user_)internal view {
+        require(roles[role_] == user_, "Invalid caller");
+        require(tokenAllowance[user_] > 0, "Payments already Completed");
+        require(remainingInstallments[user_] > 0, "installments completed");
     }
 
     function floxyTransfer(uint256 amountDue,address recepient) internal{
@@ -166,11 +150,11 @@ contract FloyxTokenomics {
             emit FundsReleased(recepient, amountDue);
     }
   
-    function percentage(uint256 totalAmount_,uint256 _percentage) public pure returns(uint256) {
+    function percentage(uint256 totalAmount_,uint256 _percentage) internal pure returns(uint256) {
         return (totalAmount_.mul(_percentage).div(100));
     }
 
-    function elapsedMonths(uint256 _lockPeriod) public view returns(uint256) {
+    function elapsedMonths(uint256 _lockPeriod) internal view returns(uint256) {
         uint256 presentTime = block.timestamp;
         uint256 elapsedTime = presentTime.sub(deployedTime);
      
