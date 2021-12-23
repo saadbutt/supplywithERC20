@@ -19,6 +19,7 @@ contract FloyxTokenomics is Ownable{
     string private constant AIRDROP_ROLE = "AIRDROP_ROLE";
     string private constant GRANTS_ROLE = "GRANTS_ROLE";
 
+    string private paymentErr = "Floyx Tokenomics : No due Payments";
     uint256 public constant unixtimeOneMonth = 60;//2592000; //60*60*24*30
     bool public lockClaim = false;
     uint256 public deployedTime;
@@ -59,7 +60,7 @@ contract FloyxTokenomics is Ownable{
         lockClaim = false;
     }
 
-    function distributeInstallment(address recepient, uint256 monthsToPay) public{
+    function distributeInstallment(address recepient, uint256 monthsToPay) private{
         uint256 amountDue=0;
         monthsToPay = monthsToPay.sub(completedInstallments[recepient]);
 
@@ -81,7 +82,7 @@ contract FloyxTokenomics is Ownable{
     function teamClaim()public{
         _verifyClaim(TEAM_ROLE, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
+        require (monthsToPay > 0, paymentErr);
         distributeInstallment(msg.sender,monthsToPay);
     }
 
@@ -89,7 +90,7 @@ contract FloyxTokenomics is Ownable{
         _verifyClaim(ADVISOR_ROLE, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
         monthsToPay = monthsToPay.div(3);
-        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
+        require (monthsToPay > 0,  paymentErr);
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -97,7 +98,7 @@ contract FloyxTokenomics is Ownable{
     function marketingClaim()public{
         _verifyClaim(MARKETING_ROLE, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
+        require (monthsToPay > 0,  paymentErr);
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -111,7 +112,7 @@ contract FloyxTokenomics is Ownable{
     function developmentClaim()public{
         _verifyClaim(DEVELOPMENT_ROLE, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
+        require (monthsToPay > 0,  paymentErr);
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -119,7 +120,7 @@ contract FloyxTokenomics is Ownable{
     function ecosystemClaim()public{
         _verifyClaim(ECOSYSTEM_ROLE, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
+        require (monthsToPay > 0,  paymentErr);
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -134,7 +135,7 @@ contract FloyxTokenomics is Ownable{
     function airDropClaim()public{
         _verifyClaim(AIRDROP_ROLE, msg.sender);
         uint256 monthsToPay = _elapsedMonths(0);
-        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
+        require (monthsToPay > 0,  paymentErr);
 
         distributeInstallment(msg.sender,monthsToPay);
     }
@@ -142,23 +143,23 @@ contract FloyxTokenomics is Ownable{
     function grantsClaim()public{
         _verifyClaim(GRANTS_ROLE, msg.sender);
         uint256 monthsToPay = _elapsedMonths(3); // 3 months lockout period
-        require (monthsToPay > 0, "Floyx Tokenomics : No due Payments yet");
+        require (monthsToPay > 0,  paymentErr);
 
         distributeInstallment(msg.sender,monthsToPay);
     }
 
     function _verifyClaim(string memory role_,address user_)internal view {
-        require(lockClaim == false,"Withdraw is locked now. Please try again later");
-        require(roles[role_] == user_, "Invalid caller");
-        require(tokenAllowance[user_] > 0, "Floyx Tokenomics : Payments already completed");
-        require(remainingInstallments[user_] > 0, "Floyx Tokenomics : installments completed");
+        require(lockClaim == false,"Floyx Tokenomics : Claim is locked now. Please try again later");
+        require(roles[role_] == user_, "Floyx Tokenomics : Invalid caller");
+        require(tokenAllowance[user_] > 0, "Floyx Tokenomics : All token payments already completed");
+        require(remainingInstallments[user_] > 0, "Floyx Tokenomics : Installments completed");
     }
 
     function updateAddress(string[] memory roles_, address[] memory addresses_)public onlyOwner{
         require(addresses_.length == roles_.length);
         
         for(uint8 i = 0; i< roles_.length; i++){
-            require(roles[roles_[i]] != address(0), "Floyx Tokenomics : role does not exists");
+            require(roles[roles_[i]] != address(0), "Floyx Tokenomics : Role does not exists");
             roles[roles_[i]] = addresses_[i];
         }
     }
