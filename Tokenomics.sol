@@ -10,77 +10,154 @@ contract FloyxTokenomics {
 
     using SafeMath for uint256;
     uint256 public constant unixtimeOneMonth = 60;//2592000; //60*60*24*30
-    uint256 public teamCounter;
     uint256 public deployedTime;
-    uint256 public paymentPerMonthTeam;
-    uint256 public installmentsTeam;
-    uint256 public paymentPerMonthAdvisor;
-    uint256 public installmentsAdvisor;
-    uint256 public paymentPerMonthMarketing;
-    uint256 public installmentsMarketing;
-    uint256 public paymentPerMonthDevelopment;
-    uint256 public installmentsDevelopment;
-    uint256 public paymentPerMonthAirdrop;
-    uint256 public installmentsAirdrop;
+
+    mapping(string => address)public roles;
+    mapping(address => uint256)public tokenAllowance;
 
     mapping(address => uint256) public paymentPerMonth;
-    mapping(address => uint) public installmentLimit;
+    mapping(address => uint) public remainingInstallments;
+    mapping(address => uint) public completedInstallments;
 
+    address public addres;
 
-    
     IERC20 internal floyx;
-    
-    mapping(address => uint) public tokenAllowance;
 
     event FundsReleased(address indexed recepient, uint256 amount);
                     // 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2,0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2,10,10,5,5,2
-    constructor(address tokenAddress_, address teamAddress_, uint256 teamPercentage_,address advisorAddress_,uint256 advisorPercentage_,address marketingAddress_,uint256 marketingPercentage_,address developmentAddress_,uint256 developmentPercentage_,address airdropAddress_,uint256 airdropPercentage_) { 
 
+    constructor(string[] memory roles_, address[] memory addresses_, uint256[] memory allowancePercentage_, 
+        uint256[] memory installmentPercentage_, address floyxAddress)public payable {
+
+        require(addresses_.length == roles_.length);
         deployedTime = block.timestamp;
-        floyx = IERC20(tokenAddress_);
-        uint256 supply = floyx.totalSupply();
+        floyx = IERC20(floyxAddress);
 
-        tokenAllowance[teamAddress_] = percentage(supply,teamPercentage_); // 10 % to supply team
-        paymentPerMonthTeam = percentage(tokenAllowance[teamAddress_],teamPercentage_);
-        installmentsTeam = tokenAllowance[teamAddress_].div(paymentPerMonthTeam);
+        uint256 totalSupply = floyx.totalSupply();
+        for (uint8 i=0; i< addresses_.length; i++){
+            roles[roles_[i]] = addresses_[i];
 
-        tokenAllowance[advisorAddress_] = percentage(supply,advisorPercentage_); // 10 % to Advisor team every quarter
-        paymentPerMonthAdvisor = percentage(tokenAllowance[advisorAddress_],advisorPercentage_);
-        installmentsAdvisor = tokenAllowance[advisorAddress_].div(paymentPerMonthAdvisor);
+            tokenAllowance[addresses_[i]] = percentage(totalSupply, allowancePercentage_[i]) ; // total supply percentage
+            paymentPerMonth[addresses_[i]] = percentage(tokenAllowance[addresses_[i]], installmentPercentage_[i]); // installments of supply
+            remainingInstallments[addresses_[i]] =  tokenAllowance[addresses_[i]].div(paymentPerMonth[addresses_[i]]);
+        }
 
-        tokenAllowance[marketingAddress_] = percentage(supply,marketingPercentage_); // 5 % to Marketing team 
-        paymentPerMonthMarketing = percentage(tokenAllowance[marketingAddress_],5);
-        installmentsMarketing = tokenAllowance[marketingAddress_].div(paymentPerMonthMarketing);
-
-        tokenAllowance[developmentAddress_] = percentage(supply,developmentPercentage_); // 12 % to Development team 
-        paymentPerMonthDevelopment = percentage(tokenAllowance[developmentAddress_],5);
-        installmentsDevelopment = tokenAllowance[developmentAddress_].div(paymentPerMonthDevelopment);
-
-        tokenAllowance[airdropAddress_] = percentage(supply,airdropPercentage_); // 3 % to AirDrop team 
-        paymentPerMonthAirdrop = percentage(tokenAllowance[airdropAddress_],2);
-        installmentsAirdrop = tokenAllowance[airdropAddress_].div(paymentPerMonthAirdrop);
         
     }
 
-    // Lockout 6 months, 10% every month
-    function claimTeam() public payable{
-        require(tokenAllowance[msg.sender] != 0, "You are not in Team allowance list");
-        require(tokenAllowance[msg.sender] > 0, "Payments Completed");
-        uint256 lockPeriod = 1; // different
-        uint256 presentTime= block.timestamp; 
-        uint256 monthsToPay = elapsedMonths(presentTime.sub(deployedTime),lockPeriod);
-
-        require (monthsToPay != 0, "No due Payments yet");
-        require(monthsToPay != teamCounter,"No due Payments yet");
-
-        if (monthsToPay>0) {
-            uint256 amountDue=0;
-            for(uint256 len=teamCounter; len<monthsToPay; len++){
-                amountDue = amountDue.add(paymentPerMonthTeam);
-                teamCounter = teamCounter.add(1);
+    function distributeInstallment(address recepient, uint256 monthsToPay) public payable {
+        uint256 amountDue=0;
+        monthsToPay = monthsToPay.sub(completedInstallments[recepient]);
+        for(uint256 len=monthsToPay; len>0; len--){
+            if(remainingInstallments[recepient] == 0){
+                break;
             }
-            floxyTransfer(amountDue,msg.sender);
+
+            amountDue = amountDue.add(paymentPerMonth[recepient]);
+            remainingInstallments[recepient] = remainingInstallments[recepient].sub(1);
+            completedInstallments[recepient] = completedInstallments[recepient].add(1);
         }
+
+        if (amountDue > 0) {
+            floxyTransfer(amountDue,recepient);
+        }
+    }
+
+    function teamClaim()public payable{
+        string memory role = "team";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        uint256 monthsToPay = elapsedMonths(0);
+        require (monthsToPay > 0, "No due Payments yet");
+
+        distributeInstallment(msg.sender,monthsToPay);
+    }
+
+    function teamAdvisor()public payable{
+        string memory role = "advisorsAndPartnership";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        uint256 monthsToPay = elapsedMonths(0);
+        monthsToPay = monthsToPay.div(3);
+        require (monthsToPay > 0, "No due Payments yet");
+
+        distributeInstallment(msg.sender,monthsToPay);
+    }
+
+    function teamMarketing()public payable{
+        string memory role = "marketing";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        uint256 monthsToPay = elapsedMonths(0);
+        require (monthsToPay > 0, "No due Payments yet");
+
+        distributeInstallment(msg.sender,monthsToPay);
+    }
+
+    function teamLiquidity()public payable{
+        string memory role = "liquidity";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+
+        distributeInstallment(msg.sender,remainingInstallments[msg.sender]);
+    }
+
+    function teamDevelopment()public payable{
+        string memory role = "development";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        uint256 monthsToPay = elapsedMonths(0);
+        require (monthsToPay > 0, "No due Payments yet");
+
+        distributeInstallment(msg.sender,monthsToPay);
+    }
+
+    function teamFunds()public payable{
+        string memory role = "ecosystemFunds";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        uint256 monthsToPay = elapsedMonths(0);
+        require (monthsToPay > 0, "No due Payments yet");
+
+        distributeInstallment(msg.sender,monthsToPay);
+    }
+
+
+    function teamTokenSale()public payable{
+        string memory role = "tokenSale";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+
+        distributeInstallment(msg.sender,remainingInstallments[msg.sender]);
+    }
+
+    function teamAirDrop()public payable{
+        string memory role = "ecosystemFunds";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        uint256 monthsToPay = elapsedMonths(0);
+        require (monthsToPay > 0, "No due Payments yet");
+
+        distributeInstallment(msg.sender,monthsToPay);
+    }
+
+    function teamGrants()public payable{
+        string memory role = "ecosystemFunds";
+        require(roles[role] == msg.sender, "Invalid caller");
+        require(tokenAllowance[msg.sender] > 0, "Payments already Completed");
+        require(remainingInstallments[msg.sender] > 0, "installments completed");
+        uint256 monthsToPay = elapsedMonths(3); // 3 months lockout period
+        require (monthsToPay > 0, "No due Payments yet");
+
+        distributeInstallment(msg.sender,monthsToPay);
     }
 
     function floxyTransfer(uint256 amountDue,address recepient) internal{
@@ -89,19 +166,19 @@ contract FloyxTokenomics {
             emit FundsReleased(recepient, amountDue);
     }
   
-    function percentage(uint256 _number,uint256 _percentage) public pure returns(uint256) {
-        return (_number.mul(_percentage).div(100));
+    function percentage(uint256 totalAmount_,uint256 _percentage) public pure returns(uint256) {
+        return (totalAmount_.mul(_percentage).div(100));
     }
 
-    function elapsedMonths(uint256 _number,uint256 _lockPeriod) public view returns(uint256) {
+    function elapsedMonths(uint256 _lockPeriod) public view returns(uint256) {
+        uint256 presentTime = block.timestamp;
+        uint256 elapsedTime = presentTime.sub(deployedTime);
+     
         uint256 unixlocktime = _lockPeriod.mul(unixtimeOneMonth);
-        require(_number>unixlocktime,"Lock period is active");
-        _number = _number.sub(unixlocktime);
-        if (_number<=0) {return 0;}
-        uint256 res =_number.div(unixtimeOneMonth);
-        if(res > installmentsTeam){ res = installmentsTeam; }
-
-        return res;
+        require(elapsedTime > unixlocktime,"Lock period is active");
+        elapsedTime = elapsedTime.sub(unixlocktime);
+        require(elapsedTime > 0, "Lock period is active");      
+        uint256 elapsedMonth = elapsedTime.div(unixtimeOneMonth);
+        return elapsedMonth;
     }
 }
-
