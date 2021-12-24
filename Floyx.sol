@@ -47,7 +47,7 @@ contract Floyx is Context, IERC20, IERC20Metadata {
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
-     * The default value of {decimals} is 18. To select a different value for
+     * The default value of {decimals} is 8. To select a different value for
      * {decimals} you should overload it.
      *
      * All two of these values are immutable: they can only be set once during
@@ -92,7 +92,7 @@ contract Floyx is Context, IERC20, IERC20Metadata {
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
     function decimals() public view virtual override returns (uint8) {
-        return 18;
+        return 8;
     }
 
     /**
