@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const bytes32 = require('bytes32');
 
 describe("Floyx Token contract", function () {
   it("Deployment should assign the total supply of tokens to the owner", async function () {
@@ -15,20 +16,33 @@ describe("Floyx Token contract", function () {
   });
 });
 
-// describe("Tokenomics contract", function(){
-//   it("Deployment file", async function () {
-//     const [owner] = await ethers.getSigners();
+describe("Tokenomics contract", function(){
+  it("Deployment file", async function () {
+    
+    const [owner,addr1,addr2] = await ethers.getSigners();
+    const Token = await ethers.getContractFactory("Floyx");
 
-//     const Token = await ethers.getContractFactory("FloyxTokenomics");
-//     console.log("123");
-//     const hardhatToken = await Token.deploy("0xd9145CCE52D386f254917e481eB44e9943F39138",["0x5146a08baf902532d0ee2f909971144f12ca32651cd70cbee1117cddfb3b3b33","0x9c1ca198f61ac1647c38f20b6678649f8e87b7e06309094d812edd1e9119d309"]
-//     ,'["0x4d23c8E0e601C5e37b062832427b2D62777fAEF9","0x4d23c8E0e601C5e37b062832427b2D62777fAEF9"]'
-//     ,'[10,"5"]','[10,"10"]');
-//     console.log("12344");
-//     const ownerBalance = await hardhatToken.balanceOf(owner.address);
-//     console.log(ownerBalance);
+    const hardhatToken = await Token.deploy("floyx","flx",100000000000000);
+    console.log(hardhatToken.address)
+    const ownerBalance = await hardhatToken.balanceOf(owner.address);
+    const FloyxTokenomics = await ethers.getContractFactory("FloyxTokenomics");
+    console.log(ownerBalance,"123");
+    const teamaddr = bytes32({ input: 'TEAM_ROLE' });
+    const advisoraddr = bytes32({ input: 'ADVISOR_ROLE' });
 
-//     expect(await hardhatToken.totalSupply()).to.equal(ownerBalance);
-//   });
+    //console.log([teamaddr,teamaddr]);
+     // ,[addr1,addr2],[10,5],[10,10]);
+    const hardhatFloyxTokenomics = await FloyxTokenomics.deploy(hardhatToken.address,
+    [teamaddr,advisoraddr],[addr1.address,addr2.address],[10,5],[10,10]);
+   // console.log(hardhatFloyxTokenomics);
+    const resp = await hardhatFloyxTokenomics.roles(teamaddr);
 
-// });
+    await expect(
+      hardhatFloyxTokenomics.connect(addr1).teamClaim()
+    ).to.be.revertedWith("Not enough tokens");
+    console.log([addr1.address,addr2.address],"start")
+    console.log(resp,"end");
+
+  });
+
+});
