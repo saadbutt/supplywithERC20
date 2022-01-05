@@ -9,7 +9,7 @@ contract Divident is Ownable {
     uint256 public rewardsAmount;
     uint256 public userBalance;
     uint256 public userPercentage;
-    uint256 public rewardAmount;
+    uint256 public rewardAmountDistributed;
 
     IERC20 internal floyx;
     using SafeMath for uint256;
@@ -33,16 +33,16 @@ contract Divident is Ownable {
         return floyx.totalSupply().sub(floyx.balanceOf(tokenomicsAddress));
     }
 
-    function ClaimDivident() public  returns(bool) {
+    function ClaimDivident() public  returns(uint256) {
         rewardsAmount = floyx.balanceOf(address(this)); 
         userBalance = floyx.balanceOf(msg.sender); 
         userPercentage = getPercentageReward(userBalance,CiculatingSupply());
-        rewardAmount = _percentage(rewardsAmount,userPercentage); 
-        if (rewardAmount > 0) {
-             floyx.transfer(msg.sender,rewardAmount);
-             return true;
+        rewardAmountDistributed = _percentage(rewardsAmount,userPercentage); 
+        if (rewardAmountDistributed > 0) {
+             floyx.transfer(msg.sender,rewardAmountDistributed);
+             return rewardAmountDistributed;
         }
-        return false;
+        return rewardAmountDistributed;
     }
       
     function _percentage(uint256 totalAmount_,uint256 percentage_) public pure returns(uint256) {
