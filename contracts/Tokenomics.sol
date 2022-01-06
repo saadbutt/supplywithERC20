@@ -10,6 +10,7 @@ import "./SafeMath.sol";
 import "./IERC20.sol";
 import "./Ownable.sol";
 
+
 contract FloyxTokenomics is Ownable{
 
     using SafeMath for uint256;

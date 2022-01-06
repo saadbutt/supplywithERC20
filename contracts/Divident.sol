@@ -6,7 +6,7 @@ import "./SafeMath.sol";
 
 contract Divident is Ownable {
     address public tokenomicsAddress;
-    uint256 public rewardsAmount;
+    uint256 public contractBalance;
     uint256 public userBalance;
     uint256 public userPercentage;
     uint256 public rewardAmountDistributed;
@@ -29,26 +29,30 @@ contract Divident is Ownable {
         floyx = IERC20(_tokenAddress);
     }
 
+    // Supply in used
     function CiculatingSupply() public view returns(uint256){
         return floyx.totalSupply().sub(floyx.balanceOf(tokenomicsAddress));
     }
 
+    // Claim your Rewards
     function ClaimDivident() public  returns(uint256) {
-        rewardsAmount = floyx.balanceOf(address(this)); 
+        contractBalance = floyx.balanceOf(address(this)); 
         userBalance = floyx.balanceOf(msg.sender); 
         userPercentage = getPercentageReward(userBalance,CiculatingSupply());
-        rewardAmountDistributed = _percentage(rewardsAmount,userPercentage); 
+        rewardAmountDistributed = _percentage(contractBalance,userPercentage); 
         if (rewardAmountDistributed > 0) {
              floyx.transfer(msg.sender,rewardAmountDistributed);
              return rewardAmountDistributed;
         }
         return rewardAmountDistributed;
     }
-      
+    
+    // Percantage of Amount
     function _percentage(uint256 totalAmount_,uint256 percentage_) public pure returns(uint256) {
         return (totalAmount_.mul(percentage_).div(100));
     }
 
+    // user rewards percentage
     function getPercentageReward(uint256 userAmount, uint256 totalAmount) public pure returns(uint256) {
         userAmount = userAmount.mul(1e8);
         uint256 result = userAmount.div(totalAmount).mul(100);

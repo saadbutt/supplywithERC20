@@ -184,8 +184,8 @@
       ]
     },
     "/home/saad/Desktop/supplywithERC20/contracts/Tokenomics.sol": {
-      "lastModificationDate": 1641150297550,
-      "contentHash": "91b423b1b331a213be3abb8920914dc5",
+      "lastModificationDate": 1641321308719,
+      "contentHash": "d4c35f3bbf1b45da8123ff33fcbdc290",
       "sourceName": "contracts/Tokenomics.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -298,8 +298,8 @@
       ]
     },
     "/home/saad/Desktop/supplywithERC20/contracts/Divident.sol": {
-      "lastModificationDate": 1641150131920,
-      "contentHash": "e6f6f83101f4586f526643272b23bd9a",
+      "lastModificationDate": 1641498268298,
+      "contentHash": "a5b0b98dc36199337c68967434c7ecf5",
       "sourceName": "contracts/Divident.sol",
       "solcConfig": {
         "version": "0.8.0",

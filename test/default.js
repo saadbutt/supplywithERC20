@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const bytes32 = require('bytes32');
 const { ethers } = require('hardhat');
 
-// Deploy Floyx Token
+// Floyx Token testing
 describe("Floyx Token contract", function () {
   it("Deployment should assign the total supply of tokens to the owner", async function () {
     const [owner] = await ethers.getSigners();
@@ -19,7 +19,7 @@ describe("Floyx Token contract", function () {
 });
 
 
-
+// Tokenomics Token test
 describe("Tokenomics contract", function(){
   
   it("Deployment file", async function () {
@@ -31,11 +31,11 @@ describe("Tokenomics contract", function(){
     const hardhatToken = await Token.deploy("floyx","flx",'45000000000000000');
 
 
-    const FloyxTokenomics = await ethers.getContractFactory("FloyxTokenomics");
     const keccak256 = require('keccak256');
     const teamaddr = keccak256('TEAM_ROLE');
     const advisoraddr = keccak256('ADVISOR_ROLE');
-   // transfer(address recipient, uint256 amount)
+    // Tokenomics Deployment
+    const FloyxTokenomics = await ethers.getContractFactory("FloyxTokenomics");
     const hardhatFloyxTokenomics = await FloyxTokenomics.deploy(hardhatToken.address,
                                   [teamaddr,advisoraddr],[addr1.address,addr2.address],[5,5],[5,10]);
                                   
@@ -54,14 +54,16 @@ describe("Tokenomics contract", function(){
     await hardhatToken.transfer(hardhatDivident.address,'4500000000000000')
 
     const circulatingsupply = await hardhatDivident.CiculatingSupply();
+
+    // consoles
     console.log("total supply",await hardhatToken.totalSupply()/100000000000000);
     console.log("before balance",await hardhatToken.balanceOf(addr1.address)/100000000000000);
     console.log("Divident address balance:", await hardhatToken.balanceOf(hardhatDivident.address)/100000000000000);
     console.log("Tokenomics address balance:", await hardhatToken.balanceOf(hardhatFloyxTokenomics.address)/100000000000000);
     console.log("circulatingsupply",circulatingsupply/100000000000000);
     const resultt= await hardhatDivident.connect(addr1).ClaimDivident();
-   // console.log("result",await hardhatDivident.connect(addr1).ClaimDivident());
-    console.log("contract balance",await hardhatDivident.rewardsAmount()/100000000000000);
+
+    console.log("contract balance",await hardhatDivident.contractBalance()/100000000000000);
     console.log("user balance",await hardhatDivident.userBalance()/100000000000000);
     console.log("user Percentage",await hardhatDivident.userPercentage());
     console.log("rewardAmountDistributed",await hardhatDivident.rewardAmountDistributed()/100000000000000);
