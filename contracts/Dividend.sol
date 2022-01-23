@@ -4,7 +4,7 @@ import "./Ownable.sol";
 import "./IERC20.sol";
 import "./SafeMath.sol";
 
-contract Divident is Ownable {
+contract Dividend is Ownable {
     address public tokenomicsAddress;
     uint256 public contractBalance;
     uint256 public userBalance;
@@ -15,11 +15,11 @@ contract Divident is Ownable {
     using SafeMath for uint256;
 
     constructor(address _tokenAddress,address _tokenomicsAddress) {
+
         require(
             _tokenAddress != address(0),
             "Token Address could not be empty"
         );
-
         require(
             _tokenomicsAddress != address(0),
             "Token Address could not be empty"
@@ -30,20 +30,21 @@ contract Divident is Ownable {
     }
 
     // Supply in used
-    function CiculatingSupply() public view returns(uint256){
+    function CiculatingSupply() public view returns(uint256) {
         return floyx.totalSupply().sub(floyx.balanceOf(tokenomicsAddress));
     }
 
     // Claim your Rewards
-    function ClaimDivident() public  returns(uint256) {
+    function ClaimDivident() public returns(uint256) {
         contractBalance = floyx.balanceOf(address(this)); 
         userBalance = floyx.balanceOf(msg.sender); 
-        userPercentage = getPercentageReward(userBalance,CiculatingSupply());
+        userPercentage = getPercentageReward(userBalance, CiculatingSupply());
         rewardAmountDistributed = _percentage(contractBalance,userPercentage); 
         if (rewardAmountDistributed > 0) {
              floyx.transfer(msg.sender,rewardAmountDistributed);
              return rewardAmountDistributed;
         }
+
         return rewardAmountDistributed;
     }
     

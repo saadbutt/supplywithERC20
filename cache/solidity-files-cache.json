@@ -184,8 +184,8 @@
       ]
     },
     "/home/saad/Desktop/supplywithERC20/contracts/Tokenomics.sol": {
-      "lastModificationDate": 1641321308719,
-      "contentHash": "d4c35f3bbf1b45da8123ff33fcbdc290",
+      "lastModificationDate": 1642621463119,
+      "contentHash": "1acb1d204e6228b7384c354b9423d3ee",
       "sourceName": "contracts/Tokenomics.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -260,8 +260,8 @@
       ]
     },
     "/home/saad/Desktop/supplywithERC20/contracts/RewardDistribution.sol": {
-      "lastModificationDate": 1641150093572,
-      "contentHash": "f22723b2ef0bd2e1a741229ea4ded90d",
+      "lastModificationDate": 1641636138251,
+      "contentHash": "0009d298543d8eac4ba68df3b4cd688b",
       "sourceName": "contracts/RewardDistribution.sol",
       "solcConfig": {
         "version": "0.8.0",
@@ -297,10 +297,10 @@
         "RewardDistribution"
       ]
     },
-    "/home/saad/Desktop/supplywithERC20/contracts/Divident.sol": {
-      "lastModificationDate": 1641498268298,
-      "contentHash": "a5b0b98dc36199337c68967434c7ecf5",
-      "sourceName": "contracts/Divident.sol",
+    "/home/saad/Desktop/supplywithERC20/contracts/Dividend.sol": {
+      "lastModificationDate": 1642353931266,
+      "contentHash": "94cc28517ac031d79f495f6cd152cd87",
+      "sourceName": "contracts/Dividend.sol",
       "solcConfig": {
         "version": "0.8.0",
         "settings": {
@@ -333,7 +333,7 @@
         "^0.8.0"
       ],
       "artifacts": [
-        "Divident"
+        "Dividend"
       ]
     }
   }

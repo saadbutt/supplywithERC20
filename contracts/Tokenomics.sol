@@ -10,7 +10,6 @@ import "./SafeMath.sol";
 import "./IERC20.sol";
 import "./Ownable.sol";
 
-
 contract FloyxTokenomics is Ownable{
 
     using SafeMath for uint256;
@@ -27,7 +26,7 @@ contract FloyxTokenomics is Ownable{
 
 
     string private paymentErr = "Floyx Tokenomics : No due Payments";
-    uint256 public constant unixtimeOneMonth = 60*60*3;//2592000; //60*60*24*30
+    uint256 public constant unixtimeOneMonth = 60*60;//2592000; //60*60*24*30
     bool public lockClaim = false;
     uint256 public deployedTime;
 
@@ -41,12 +40,14 @@ contract FloyxTokenomics is Ownable{
 
     event FundsReleased(address indexed recepient, uint256 amount);
 
-    constructor( address floyxAddress, bytes32[] memory roles_, address[] memory addresses_, uint256[] memory allowancePercentage_,
-        uint256[] memory installmentPercentage_) {
-
-        require(addresses_.length == roles_.length);
-
+    constructor() {
         deployedTime = block.timestamp;
+        
+    }
+
+    function init(address floyxAddress, bytes32[] memory roles_, address[] memory addresses_, uint256[] memory allowancePercentage_, 
+        uint256[] memory installmentPercentage_)public onlyOwner{
+        require(addresses_.length == roles_.length);
         floyx = IERC20(floyxAddress);
         uint256 totalSupply = floyx.totalSupply();
 

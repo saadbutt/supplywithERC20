@@ -28,6 +28,7 @@ contract RewardDistribution is Ownable {
         floyx = IERC20(_tokenAddress);
     }
 
+    // withdraw rewards given by admin
     function withdrawReward(
         address userAddress,
         uint256 amount,
@@ -38,7 +39,7 @@ contract RewardDistribution is Ownable {
         require(amount > 0, "Amount cannot be zero");
         require(!usedSignatures[signature], "Signatures already used");
 
-        address recoveredAddress = recoverSigner(
+        address recoveredAddress = recoverSignerAddress(
             keccak256(abi.encodePacked(userAddress, amount, withdrawalId)),
             signature
         );
@@ -49,7 +50,8 @@ contract RewardDistribution is Ownable {
         emit RewardWithdrawal(userAddress, amount, withdrawalId);
         return true;
     }
-
+    
+    //Admin can withdraw and transfer any amount to any address
     function adminWithdrawal(address userAddress, uint256 amount)
         public
         onlyOwner
@@ -68,7 +70,8 @@ contract RewardDistribution is Ownable {
         signerAddress = _signerAddress;
     }
 
-    function recoverSigner(bytes32 message, bytes memory sig)
+    // Return address of signature
+    function recoverSignerAddress(bytes32 message, bytes memory sig)
         internal
         pure
         returns (address)
